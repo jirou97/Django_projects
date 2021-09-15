@@ -1,0 +1,10 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings for category {{ category }}</h2>
+	{% for x in listing %}
+		<li class="nav-item"> <b><a href="/listings/{{x.auction_id}}">{{x.auction}} </a> </b> ,<br> Created At {{x.timestamp}}<br> by <a href="/user/{{x.user.username}}">{{ x.user.username }}</a><br> with starting price at {{x.price}} </li>
+	{% empty %}
+		No items found 
+	{% endfor %}
+{% endblock %}

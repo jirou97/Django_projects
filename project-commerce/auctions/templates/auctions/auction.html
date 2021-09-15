@@ -1,0 +1,132 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+	{% if message %}
+		{{ message }} 
+	{% endif %}
+    <h2>Listing: {{listings.auction}}</h2>
+	<div style=" display: block;">
+		<div style="display: flex">
+			{% if listings.expire_time >= datetime %}
+				{% if not watchlist %}
+					<form method="post" action="{% url 'watchlist' user.username %}" >
+						{% csrf_token %}
+						<input type="hidden" value={{listings.auction_id}} name = auction_id>
+						<input type="hidden" value='listings' name = redirect_to>
+						<button type="submit"><span style="background-color: tomato"> Add to watchlist.</span></a></button>
+					</form>
+				{% else %}
+					<form method="post" action="{% url 'delete_watchlist' %}" >
+						{% csrf_token %}
+						<input type="hidden" value={{listings.auction_id}} name = auction_id>
+						<input type="hidden" value="False" name = redirect>
+						<input type="hidden" value='listings' name = redirect_to>
+						<button type="submit"><span style="background-color: tomato"> Item already in watchlist.</span></a></button>
+					</form>
+				{% endif %}
+			{% endif %}
+		</div>
+		{% if x.image2 == "avatars/avatar.png" %}
+			<img src="{%static '/images/no_image.jpg' %}" alt="Item's image" width="350px" height="325px" style="float: left; margin-right:15px;">
+		{% else %}
+			<img src="{{image}}" alt="Item's image" width="350px" height="325px" style="float: left; margin-right:15px;">
+		{% endif %}
+
+	{% if request.user == listings.user and listings.expire_time > datetime %}
+		Click here to finish the auction:
+		<form method="post" action={% url 'update_datetime' listings.auction_id %} >
+				{% csrf_token %}
+			<button type="submit" value="Submit">Click</button>
+		</form>
+	{% endif %}
+	<hr>
+
+
+	{% if highest_bidder %}
+		<h3>Current bid : ${{highest_bidder.bid}} </h3>
+    {% else %}
+        <h3>Starting Price : ${{ listings.price }}</h3>
+	{% endif %}
+
+	<hr>
+	{% if listings.expire_time < datetime %}
+		This auction has ended. <br>
+		{% if highest_bidder %}
+			The winner is <a href="/user/{{ listings.user.username}}">{{ highest_bidder.user.username }} </a> <br>
+			Congratulations!!
+		{% else %}
+			No one bidded 
+		{% endif %}
+	{% else %}
+		{{bids}} bid(s) so far.
+		{% if highest_bidder.user.username ==  user.username %}
+			Your bid is the best so far
+		{% endif %}
+		<form method="post" action={% url 'listings' listings.auction_id %} >
+				{% csrf_token %}
+			<label for="bid">Bid here</label>
+			<input type="text" name="bid">
+			<button type="submit" value="Submit">Place your bid</button>
+		</form>
+		<b> More Details : </b>
+		<li> Listed by : <a href="/user/{{ listings.user.username}}">{{ listings.user.username }}</a> </li>
+            {% if categories %}
+                <li>Category(ies):</li>
+            {% endif %}
+            {% for category in categories %}
+                [<a href="/categories/{{category.category}}">{{category.category}}</a>]
+            {% empty %}
+                <li> No category listed </li>
+            {% endfor %}
+		<li> Expires at the following date : {{ listings.expire_time.date }} </li>
+		
+		<h3> Place your comment here : </h3>
+		<form method="post" action={% url 'comment' listings.auction_id %} >
+			{% csrf_token %}
+			<label for="comment">Comment Here</label>
+			<input type="text" name="comment">
+			<button type="submit" value="Submit">Send your comment</button>
+		</form>
+		<h3>Comment Section </h3>
+		<div class="comment_block">
+		{% for comment in comments %}
+               <!-- new comment -->
+		 <div class="new_comment">
+
+			<!-- build comment -->
+		 	<ul class="user_comment">
+            <!-- the comment body -->
+			<div class="comment_body" style="background-color: lightyellow">
+                <p styles="font-size=10px"> <ul> <b style="font-size:20px;">{{ comment.user.username }} said :</b>  {{ comment.comment }} </ul></p>
+                <div class="comment_toolbar">
+			 		<!-- inc. date and time -->
+			 		<div class="comment_details">
+			 			<ul>
+			 				<li><i class="fa fa-clock-o"></i> {{ comment.timestamp.time }}</li>
+			 				<li><i class="fa fa-calendar"></i> {{ comment.timestamp.date }}</li>
+			 				<li><i class="fa fa-pencil"></i> <span class="user">Created by <a href="/user/{{ comment.user.username}}">{{ comment.user.username }} </a></span></li>
+			 			</ul>
+			 		</div>
+                    {% if request.user == comment.user %}
+
+                                    <form style="float:left;" method="post" action={% url 'deletecomment' %} >
+                                    {% csrf_token %}
+                                    <input type="hidden" name="comment" value={{ comment.id }}>
+                                   <li> <button type="submit"><i class="fa fa-close"></i></button></li>
+                                    </form>
+
+			        {% endif %}
+			 	</div>
+			    </div>
+            </ul>
+         </div>
+		{% empty %}
+			No comments found. Be the first to comment on this auction.
+        {% endfor %}
+        </div>
+
+
+	{% endif %}
+	</div>
+{% endblock %}

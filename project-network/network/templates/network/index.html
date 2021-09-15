@@ -1,0 +1,173 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+        {% if user.is_authenticated %}
+            <h3>New Post</h3>
+            <form id="compose-form">
+                <textarea class="form-control" id="compose-body" placeholder="Create a post here {{request.user.username}}"></textarea>
+                <input type="submit" id="create_post" class="btn btn-primary"/>
+            </form>
+            <script>
+                document.querySelector('#create_post').addEventListener('click', ()=>{
+
+                    let body = document.querySelector("#compose-body").value;
+                      fetch('/post', {
+                          method: 'POST',
+                          body: JSON.stringify({
+                              body: body,
+                              types: "post"
+                          })
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            window.location.replace("http://127.0.0.1:8000/");
+                            return result.message === "Post sent successfully.";
+                        });
+                    }
+                    );
+            </script>
+        {% endif %}
+        <hr>
+        {% for post in page_obj %}
+            <div class="post">
+                <a id="post_id" style="display:none;">{{ post.id }}</a>
+
+                <!-- User form -->
+                <form name="user_form_{{ post.user.id }}" method="GET" action="{% url 'user_view' post.user.id %}">
+                    <div onclick="document.forms['user_form_{{ post.user.id }}'].submit()"> <b> {{post.user.username}}</b> </div>
+                </form>
+
+                <!-- Follow, unfollow forms -->
+                {% if post.user != user %}
+                    {% if user in post.followers %}
+                        <form name="unfollow_form_{{ post.user.id }}" method="POST" action="{% url 'unfollow_view'  %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" style="display:none;" value={{ post.user.id }}>
+                            <div onclick="document.forms['unfollow_form_{{ post.user.id }}'].submit()"> <b> Unfollow</b> </div>
+                        </form>
+                        
+                    {% else %}
+                        <form name="follow_form_{{ post.user.id }}" method="POST" action="{% url 'follow_view'  %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" style="display:none;" value={{ post.user.id }}>
+                            <div onclick="document.forms['follow_form_{{ post.user.id }}'].submit()"> <b> Follow</b> </div>
+                        </form>
+                    {% endif %}
+                {% endif %}
+
+                <!-- Post form -->
+                <form name="post_form_{{ post.id }}" method="GET" action="{% url 'put_post' post.id %}">
+                    <div onclick="document.forms['post_form_{{ post.id }}'].submit()">Post: {{ post.body }}</div>
+                </form>
+
+                <!-- Edit and delete post -->
+                {% if post.user == user %}
+                    <a href="{% url 'edit_post' post.id %}">Edit</a>
+                    <a href="{% url 'delete_post' post.id %} ">Delete</a>
+                {% endif %}
+
+                <!-- Show timestamp -->
+                {% if post.timestamp_created.date == post.timestamp_edited.date %}
+                    <div ><a style="float:right">created at {{ post.timestamp_created}}</a></div>
+                {% else %}
+                    <div ><a style="float:right">post edited {{ post.timestamp_edited}} </a></div>
+                {% endif %}
+
+                <!-- Number of likes and comments -->
+                {% if user.is_authenticated %}
+                <div>
+                    {% if post.user != user  %}
+                        {% if request.user not in post.likers %}
+                            <i class="fa fa-heart-o btn btn-default" id="like_the_post" data-postid="{{ post.id }}" data-likes="{{ post.likes }}">{{ post.likes }}</i>
+                        {% else %}
+                            <i class="fa fa-heart-o btn btn-default"  id="delete-like" style="color:red" data-postid="{{ post.id }}" data-likes="{{ post.likes }}">{{ post.likes }}</i>
+                        {% endif %}                        
+                    {% else %}
+                        <i class="fa fa-heart" data-postid="{{ post.id }}" data-likes="{{ post.likes }}">{{ post.likes }}</i>
+                    {% endif %}
+
+                    <!-- Comment -->
+                    <i onclick="document.forms['post_form_{{ post.id }}'].submit()"><i class="fa fa-comment" id="comment" data-postid="{{ post.id }}">{{ post.comments }}</i></i>
+                    <form method="post" action="{% url  'comment' post.id %}">
+                        {% csrf_token %}
+                        <input name="comment" placeholder="Comment here..">
+                        <input class="btn btn-primary" type="submit" value="Comment">
+                    </form>
+
+                </div>
+                {% endif %}
+                <br>
+                <hr>
+
+            
+        {% empty %}
+                No posts to show
+        {% endfor %}
+
+    
+        <!-- Script to like and unlike a post. -->
+        <script>
+            document.querySelectorAll('.fa-heart-o').forEach(function(button){
+                button.onclick = () => {
+                    let id = parseInt(button.dataset.postid);
+                    if(button.id == "like_the_post"){
+                        fetch('/post', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                post: id,
+                                types: "like"
+                            })
+                        }).then( 
+                            () => {
+                                button.id ="delete-like";
+                                button.style="color:red";
+                                let likes = parseInt(button.dataset.likes);
+                                likes = likes + 1;
+                                button.dataset.likes = likes.toString();
+                                button.innerHTML = likes.toString();
+                            }
+                        )
+                    }
+                    else{
+                        fetch('/post', {
+                            method: 'DELETE',
+                            body: JSON.stringify({
+                                post: id
+                            })
+                        }).then(
+                            () => {
+                                button.id ="like_the_post";
+                                button.style="color:black";
+                                let likes = parseInt(button.dataset.likes);
+                                likes = likes - 1;
+                                button.dataset.likes = likes.toString();
+                                button.innerHTML = likes.toString();
+                            }
+                        )
+                    }
+                }
+            });
+            
+        </script>
+            </div>
+
+        <!-- Paginator -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
+{% endblock %}

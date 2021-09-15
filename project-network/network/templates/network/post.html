@@ -1,0 +1,29 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+        {% if user.is_authenticated %}
+            Post, created by {{ post.user.username }}
+            <div> {{ post.body }}</div>
+            <hr>
+            Comment Section 
+            <hr>
+            {% for comment in comments %}
+                User <b>{{ comment.user }}</b> said: {{ comment.comment }} 
+                {% if comment.user == request.user %}
+                    <form method="POST" action="{% url  'delete_comment' comment.id %}">
+                        {% csrf_token %}
+                        <input class="btn btn-primary" type="submit" value="Delete comment">
+                    </form>
+                {% endif %}
+                <hr>
+            {% empty %}
+                No comments have been made yet.
+            {% endfor%}
+            <form method="post" action="{% url  'comment' post.id %}">
+                {% csrf_token %}
+                <input name="comment" placeholder="Comment here..">
+                <input class="btn btn-primary" type="submit" value="Comment">
+            </form>
+        {% endif %}
+
+{% endblock %}

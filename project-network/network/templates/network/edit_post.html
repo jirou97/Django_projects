@@ -1,0 +1,12 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+        {% if user == post.user %}
+            <h3>Edit Post</h3>
+            <form method="post" action='{% url "edit_post" post.id %}'>
+                {% csrf_token %}
+                <input type="text" class="form-control" name="post_body" value="{{ post.body }}">
+                <input type="submit" id="edit_post" class="btn btn-primary"/>
+            </form>
+        {% endif %}
+{% endblock %}

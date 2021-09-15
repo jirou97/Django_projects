@@ -1,0 +1,47 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <h2>User Profile...</h2>
+	<div><img src="{% static user1.image2 %}" alt="Users avatar" width="110px" height="100px" style="float: left; padding-inline-end: 10px;">
+	<p> User's email : {{ user1.email }}  </p>
+	<p> Account created at : {{ user1.time_created }}  </p>
+	<p> Account is {% if not user1.verified %} not {% endif %} verified </p>
+	</div>
+	<hr>
+	<h4> Recent Auction Listings by {{ user1.username }} </h4>
+	{% for x in auctions_by_user %}
+			<li class="nav-item"> 
+				<b><a href="/listings/{{x.auction_id}}">{{x.auction}}</a></b>,
+				<br> Created At {{x.timestamp}}
+				<br> with starting price at {{x.price}}
+				and has these categories:
+				{% for categ in x.categories %}
+					[<a href="/categories/{{ categ.category }}">{{categ.category}}</a>]
+				{% empty %}
+					no category
+				{% endfor %}</ul>
+			</li>
+	{% empty %}
+		No auctions were made by this user.. 
+	{% endfor %}
+	<hr>
+	
+	<h4> Recent Bids by {{ user1.username }} </h4>
+	{% for x in bids %}
+		<li class="nav-item"> <b><a href="/listings/{{x.auction_id}}">{{x.auction}}</a></b></li>
+	{% empty %}
+		No bids were made by this user.. 
+	{% endfor %}
+	<hr>
+	
+	<h4> Recent Comments by {{ user1.username }} </h4>
+	{% for x in comments %}
+		<li class="nav-item"> <b><a href="/listings/{{x.auction_id.auction_id}}">{{x.auction_id.auction}}</a></b> and Commented :
+			<p> {{x.comment}} </p></li>
+	{% empty %}
+		No comments were made by this user.. 
+	{% endfor %}
+	<hr>
+	
+{% endblock %}

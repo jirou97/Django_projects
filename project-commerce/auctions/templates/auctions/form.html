@@ -1,0 +1,26 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+	{% if message %}
+		{{ message }}
+	{% endif %}
+	<form action="{% url 'listing' %}" method="post">
+			{% csrf_token %}
+			<label for="id_title">Listing Auction Title:</label>
+			<input type="text" name="title" size="80" maxlength="100" required id="id_title" >
+			<br>
+			<label for="id_price">Starting Price of the current Item:</label>
+			<input type="number" name="price" step="any" required id="id_price">
+			<br>
+			<label for="id_category">Categories seperated with ,:</label>
+			<input type="text" name="category" size="100" id="id_category">
+			<br>
+			<label for="id_image">Auciton image url:</label>
+			<input type="text" name="image" size="125" id="id_image">
+			<br>
+			<label for="id_expire">Expiration date:</label>
+			<input type="datetime-local" required min="2020-10-18T00:00" name="expiration-date" size="125" id="id_expire">
+			<br>
+			<input type="submit" >			
+		</form>	
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}	
+	<script>   
+	document.addEventListener('DOMContentLoaded', function() {
+	
+		var input_btn = document.getElementById("categories_autocomplete_button");
+		
+		input_btn.onclick = function() {
+			var input_text = document.getElementById("categories_autocomplete").value;
+			console.log(input_text);
+			location.href = `/categories/${input_text}`;
+		};
+		
+		// Get the input field
+		var input = document.getElementById("categories_autocomplete");
+
+		// Execute a function when the user releases a key on the keyboard
+		input.addEventListener("keyup", function(event) {
+		  // Number 13 is the "Enter" key on the keyboard
+		  if (event.keyCode === 13) {
+			// Cancel the default action, if needed
+			event.preventDefault();
+			// Trigger the button element with a click
+			document.getElementById("categories_autocomplete_button").click();
+		  }
+		});
+		
+		
+		
+		  $( function() {
+			var availableTags = [
+				{% for category in categories %}
+					"{{category}}",
+				{% endfor %}
+			];
+			$( "#categories_autocomplete" ).autocomplete({
+			  source: availableTags
+			});
+		  } );
+	  });
+	  </script>
+	  
+	<input type="text" id="categories_autocomplete">
+	<button id="categories_autocomplete_button">Search for category</button>	
+	
+    <h2>All listed categories for items</h2>
+	{% for x in categories %}
+		<li class="nav-item"> <a href="/categories/{{x}}">{{x}} </a> </li>
+	{% empty %}
+		No listed categories found..
+	{% endfor %}
+{% endblock %}
+

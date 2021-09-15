@@ -1,0 +1,51 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+{% block body %}
+    <h2>Active Listings</h2>
+	{% for x in listing %}
+			<div style=" display: flex;">
+				{% if x.image2 == "avatars/avatar.png" %}
+					<img src="{%static '/images/no_image.jpg' %}" alt="Item's image" width="350px" height="325px" style="float: left; vertical-align: middle; margin-right:15px;">
+				{% else %}
+					<img src="{{x.image2}}" alt="Item's image" width="350px" height="325px" style="float: left; margin-right:15px;">
+				{% endif %}
+				<ul class="nav-item"> <b><a href="/listings/{{x.auction_id}}">{{x.auction}} </a></b>
+				{% if x.expire_time < datetime %}
+					This auction has ended. <br>
+				{% else %}
+				{% if watchlist_exists %}
+					{% if x not in watchlist %}
+						<form method="post" action="{% url 'watchlist' user.username%}" >
+							{% csrf_token %}
+							<input type="hidden" value={{x.auction_id}} name = auction_id>
+							<input type="hidden" value='index' name = redirect_to>
+							<button type="submit">Click to Add to Watchlist</button>
+						</form>
+					{% else %}
+						<form method="post" action="{% url 'delete_watchlist' %}" >
+							{% csrf_token %}
+							<input type="hidden" value={{x.auction_id}} name = auction_id>
+							<input type="hidden" value='index' name = redirect_to>
+							<input type="hidden" value="False" name = redirect>
+							<button type="submit">Remove from Watchlist</button>
+						</form>
+					{% endif %}
+				{% endif %}
+
+				{% endif %}
+				Created At {{x.timestamp}}<br>
+				by <a href="/user/{{x.user.username}}">{{ x.user.username }}</a>
+				<br> with starting price at ${{x.price}} and has
+						these categories :
+				{% for categ in x.categories %}
+					[<a href="/categories/{{ categ.category }}">{{categ.category}}</a>]
+				{% empty %}
+					no category
+				{% endfor %}</ul>
+			</div>
+			<br>
+			<hr>
+	{% empty %}
+		No items found 
+	{% endfor %}
+{% endblock %}

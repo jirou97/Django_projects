@@ -1,0 +1,16 @@
+textarea {
+    min-height: 400px;
+}
+
+#email {
+    font-family: sans-serif;
+    display: inline;
+    border-block: black;
+    border-width: 250px;
+    font-size: 10px;
+    overflow:hidden;
+    width: auto;
+}
+.kouradoules{
+    display: inline;
+}

@@ -1,0 +1,15 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Your Watchlist</h2>
+	{% for x in watchlist %}
+		<form method="post" action="{% url 'delete_watchlist' %}" >
+			{% csrf_token %}
+			<input type="hidden" value={{x.auction_id}} name = auction_id>
+			<input type="hidden" value="True" name = redirect>
+			<li class="nav-item"> <b><a href="/listings/{{x.auction_id}}">{{x.auction}} </a> <button type="submit">Click to Remove from Watchlist</button> </b> ,<br> Created At {{x.timestamp}}<br> by <a href="/user/{{user.username}}">{{ x.user.username }}</a><br> with starting price at {{x.price}} has id {{x.auction_id}} and has {% if x.category %} this category : <a href="/categories/{{x.category}}">{{x.category}}</a> {% else %} no category {% endif %}</li>
+		</form>
+	{% empty %}
+		Your watchlist is empty..
+	{% endfor %}
+{% endblock %}

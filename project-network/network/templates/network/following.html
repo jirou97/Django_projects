@@ -1,0 +1,23 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+
+Following :
+{% for following in followings%}
+   <br>
+   {{ following }}
+{% empty %}
+<br>
+  You are not following anyone.
+{% endfor %}
+<hr>
+Followers :
+{% for follower in followers%}
+   <br>
+   {{ follower }}
+{% empty %}
+<br>
+  No one is following you.
+{% endfor %}
+
+{% endblock %}
